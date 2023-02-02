@@ -1,20 +1,22 @@
 package com.cong.filecompare.controller;
 
 import com.cong.filecompare.common.MapperEnum;
-import com.cong.filecompare.pojo.CreateInfoRequest;
-import com.cong.filecompare.pojo.CreateInfoResponse;
-import com.cong.filecompare.pojo.LoginResponse;
-import com.cong.filecompare.pojo.Result;
+import com.cong.filecompare.pojo.*;
 import com.cong.filecompare.service.FileCompareService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,24 +35,26 @@ public class FileCompareController {
     private FileCompareService service;
 
     @PostMapping("createInfo")
-    public void createInfo(@RequestBody CreateInfoRequest createInfoRequest) throws JsonProcessingException {
+    public CreateInfoResponse createInfo(@RequestBody CreateInfoRequest createInfoRequest) throws JsonProcessingException {
         System.out.println(MapperEnum.INSTANCE.getObjectMapper().writeValueAsString(createInfoRequest));
-        String uri="create_info";
-        Mono<CreateInfoResponse> responseFlux = webClient.post().uri(uri).
+        String uri="/doc_compare/create_info";
+        Mono<String> responseFlux = webClient.post().uri(uri).
                 contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(createInfoRequest)
-                .retrieve().bodyToMono(CreateInfoResponse.class);
+                .retrieve().bodyToMono(String.class);
 
-        CreateInfoResponse response = responseFlux.block();
-        System.out.println(MapperEnum.INSTANCE.getObjectMapper().writeValueAsString(response));
-
+        String createInfoResponse = responseFlux.block();
+        assert createInfoResponse != null;
+        log.info(createInfoResponse);
+        CreateInfoResponse response = MapperEnum.INSTANCE.getObjectMapper().readValue(createInfoResponse, CreateInfoResponse.class);
+        return response;
     }
 
 
     @SneakyThrows
     @GetMapping("getToken")
     public String getToken(){
-        String url="/user/login";
+        String url="/doc_compare/user/login";
         Map<String, String> map = new HashMap<>();
         map.put("account","admin");
         map.put("password","e71cd8c35cf4f57fe146a3e4f46721d7");
@@ -64,4 +68,70 @@ public class FileCompareController {
         }
         return "";
     }
+
+
+    /**
+     * 文件上传
+     * @param uploadFrom
+     */
+    @SneakyThrows
+    @PostMapping("upload")
+    public void uploadFile(UploadFrom uploadFrom,File file){
+        String url="/file/upload?from=doc_compare&filename={filename}&compare_id={compareId}&doc_index={docIndex}&remove_stamp=1&remove_comments=0&remove_headerfooter=0&remove_footnote=0&remove_symbol=1";
+        log.info("uploadFile {}",file.getName());
+        Resource resource = new FileSystemResource(file);
+        uploadFrom.setFilename(file.getName());
+        Mono<String> stringMono = webClient.post()
+                .uri(url,uploadFrom.getFilename(),uploadFrom.getCompareId(),uploadFrom.getDocIndex())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromMultipartData("file",resource))
+                .retrieve().bodyToMono(String.class);
+        stringMono.block();
+    }
+
+    /**
+     * 更新任务
+     * @param updateTask
+     * @return
+     */
+    @PostMapping("updateTask")
+    public Result updateTask(@RequestBody UpdateTask updateTask){
+        String url="/doc_compare/update_task";
+        Mono<Result> resultMono = webClient.post().uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(updateTask)
+                .retrieve().bodyToMono(Result.class);
+        return resultMono.block();
+    }
+
+
+    @SneakyThrows
+    @GetMapping("compare")
+    public Result compareFile(){
+        String doc1="/Users/cong/Downloads/source.pdf";
+        String doc2="/Users/cong/Downloads/target.pdf";
+        CreateInfoRequest createInfoRequest = new CreateInfoRequest();
+        createInfoRequest.setName("source.pdf");
+        createInfoRequest.setMergeDiff(1);
+        CreateInfoResponse createInfoResponse = this.createInfo(createInfoRequest);
+        log.info("createInfoResponse {}",createInfoResponse.toString());
+        UploadFrom uploadFrom = new UploadFrom();
+        uploadFrom.setCompareId(createInfoResponse.getCompareId());
+        uploadFrom.setDocIndex(1);
+        this.uploadFile(uploadFrom,new File(doc1));
+
+        UploadFrom uploadFrom2 = new UploadFrom();
+        uploadFrom2.setCompareId(createInfoResponse.getCompareId());
+        uploadFrom2.setDocIndex(2);
+        this.uploadFile(uploadFrom2,new File(doc2));
+
+        //更新任务
+        UpdateTask updateTask = new UpdateTask();
+        updateTask.setCompareId(createInfoResponse.getTaskId());
+        Result result = this.updateTask(updateTask);
+        log.info("upodate Task {}",result);
+        return result;
+    }
+
+
 }
