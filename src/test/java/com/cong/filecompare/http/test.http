@@ -1,0 +1,11 @@
+###
+POST http://localhost:8080/file/compare/createInfo2
+Content-Type:  application/json
+
+{
+  "name":"原始文档.pdf",
+  "merge_diff":1
+}
+###
+
+GET  http://127.0.0.1:8080/file/compare/getToken

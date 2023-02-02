@@ -13,12 +13,13 @@ public class CreateInfoResponse {
     /**
      * 标准文档名称
      */
-    private String name;
+    @JsonProperty(value = "compare_id")
+    private String compareId;
 
 
     /**
      * 合并差异项
      */
-    @JsonProperty(value = "merge_diff")
-    private Integer mergeDiff;
+    @JsonProperty(value = "task_id")
+    private Integer taskId;
 }

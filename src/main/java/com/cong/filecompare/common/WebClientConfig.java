@@ -11,7 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
-    private final static String BASE_URL="http://192.168.104.122:4850/";
+    private final static String BASE_URL="http://192.168.104.122:4850/doc_compare/";
     @Bean
     public WebClient createClient(){
        return WebClient.builder()
