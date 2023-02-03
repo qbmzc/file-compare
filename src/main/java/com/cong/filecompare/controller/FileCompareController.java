@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -17,6 +18,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -133,5 +138,48 @@ public class FileCompareController {
         return result;
     }
 
+    @SneakyThrows
+    @GetMapping("new")
+    public void newCompare(){
+        String url="/doc_compare/create";
+        String doc1="/Users/cong/Downloads/source.pdf";
+        String doc2="/Users/cong/Downloads/target.pdf";
 
+        CompareDto compareDto = new CompareDto();
+        ConvertArg convertArg = new ConvertArg();
+        convertArg.setRemoveStamp(1);
+        convertArg.setRemoveComments(0);
+        convertArg.setRemoveFootnote(0);
+        convertArg.setRemoveHeaderfooter(0);
+        convertArg.setRemoveSymbol(1);
+        compareDto.setConvertArg(convertArg);
+
+        Document standard = new Document();
+        byte[] standardBytes = Files.readAllBytes(Path.of(doc1));
+        String standDoc = Base64.getEncoder().encodeToString(standardBytes);
+        standard.setFiledata(standDoc);
+        standard.setFilename("source.pdf");
+
+        Document compare = new Document();
+        byte[] cBytes = Files.readAllBytes(Path.of(doc2));
+        String cDoc = Base64.getEncoder().encodeToString(cBytes);
+        standard.setFiledata(cDoc);
+        standard.setFilename("target.pdf");
+
+        ArrayList<Document> standardDoc = new ArrayList<>(1);
+        standardDoc.add(standard);
+        ArrayList<Document> compareDoc = new ArrayList<>();
+        compareDoc.add(compare);
+        compareDto.setStandardDoc(standardDoc);
+        compareDto.setCompareDoc(compareDoc);
+
+        Mono<String> mono = webClient.post().uri(url).contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(compareDto).retrieve().bodyToMono(String.class);
+        System.out.println(mono.block());
+
+    }
+
+    public static void main(String[] args) {
+        new FileCompareController().newCompare();
+    }
 }

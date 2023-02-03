@@ -25,3 +25,10 @@ Content-Type: application/json
 ###
 GET http://192.168.84.124:8080/file/compare/compare
 ###
+
+POST http://192.168.84.124:8080/file/compare/updateTask
+Content-Type: application/json
+
+{
+  "compareId": ""
+}
