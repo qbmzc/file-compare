@@ -142,8 +142,8 @@ public class FileCompareController {
     @GetMapping("new")
     public void newCompare(){
         String url="/doc_compare/create";
-        String doc1="/Users/cong/Downloads/source.pdf";
-        String doc2="/Users/cong/Downloads/target.pdf";
+        String doc1="/home/cong/data/space/source.pdf";
+        String doc2="/home/cong/data/space/target.pdf";
 
         CompareDto compareDto = new CompareDto();
         ConvertArg convertArg = new ConvertArg();
