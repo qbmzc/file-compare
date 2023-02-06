@@ -1,16 +1,15 @@
-package com.cong.filecompare.common;
+package com.cong.devola.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * @author cong
- * @date 2023/2/1 17:45
- */
 public enum MapperEnum {
-
     INSTANCE;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
+    MapperEnum() {
+        objectMapper = new ObjectMapper();
+    }
 
     public ObjectMapper getObjectMapper() {
         return objectMapper;
