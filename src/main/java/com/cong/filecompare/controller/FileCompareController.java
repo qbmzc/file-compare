@@ -1,22 +1,5 @@
 package com.cong.filecompare.controller;
 
-import com.cong.filecompare.common.MapperEnum;
-import com.cong.filecompare.pojo.*;
-import com.cong.filecompare.service.FileCompareService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.util.Base64Utils;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +7,35 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import com.cong.filecompare.common.MapperEnum;
+import com.cong.filecompare.pojo.CompareDto;
+import com.cong.filecompare.pojo.ConvertArg;
+import com.cong.filecompare.pojo.CreateInfoRequest;
+import com.cong.filecompare.pojo.CreateInfoResponse;
+import com.cong.filecompare.pojo.Document;
+import com.cong.filecompare.pojo.LoginResponse;
+import com.cong.filecompare.pojo.Result;
+import com.cong.filecompare.pojo.UpdateTask;
+import com.cong.filecompare.pojo.UploadFrom;
+import com.cong.filecompare.service.FileCompareService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 /**
  * @author cong
@@ -142,8 +154,8 @@ public class FileCompareController {
     @GetMapping("new")
     public void newCompare(){
         String url="/doc_compare/create";
-        String doc1="/Users/cong/Downloads/source.pdf";
-        String doc2="/Users/cong/Downloads/target.pdf";
+        String doc1="/home/cong/data/space/source.pdf";
+        String doc2="/home/cong/data/space/target.pdf";
 
         CompareDto compareDto = new CompareDto();
         ConvertArg convertArg = new ConvertArg();
@@ -177,9 +189,7 @@ public class FileCompareController {
                 .bodyValue(compareDto).retrieve().bodyToMono(String.class);
         System.out.println(mono.block());
 
+        
     }
 
-    public static void main(String[] args) {
-        new FileCompareController().newCompare();
-    }
 }
