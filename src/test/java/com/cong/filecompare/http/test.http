@@ -1,3 +1,9 @@
+POST http://localhost:80/api/item
+Content-Type: application/x-www-form-urlencoded
+
+id=99&content=new-element
+
+###
 ###
 POST http://localhost:8080/file/compare/createInfo
 Content-Type:  application/json
@@ -32,3 +38,13 @@ Content-Type: application/json
 {
   "compareId": ""
 }
+
+###
+
+POST 192.168.84.124:8080/param/test
+Content-Type: application/x-www-form-urlencoded
+
+name=aaa
+###
+POST 192.168.84.124:8080/param/test?name=aaa
+###

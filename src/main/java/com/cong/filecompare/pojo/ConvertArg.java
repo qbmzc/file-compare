@@ -10,6 +10,9 @@ import lombok.Data;
 @Data
 public class ConvertArg {
 
+    /**
+     * 忽略印章
+     */
     @JsonProperty(value = "remove_stamp")
     private Integer removeStamp;
     /**
