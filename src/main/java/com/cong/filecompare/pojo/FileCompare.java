@@ -1,19 +1,14 @@
 package com.cong.filecompare.pojo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Data;
 
 /**
- * @author cong.zheng
- * @since 2023-02-08 16:51
- * 
- *        The FileCompare Pojo class is used to store data related to file
- *        comparison tasks.
+ * @author cong
+ * @date 2023/2/13 15:16
  */
 @Data
 public class FileCompare {
-
     /**
      * 标准文档
      */
@@ -23,7 +18,9 @@ public class FileCompare {
      * 被⽐对⽂档
      */
     private String compareFileId;
-
+    /**
+     * 预览地址
+     */
     @JsonProperty(value = "preview_url")
     private String previewUrl;
 

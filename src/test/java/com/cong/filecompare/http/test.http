@@ -48,3 +48,5 @@ name=aaa
 ###
 POST 192.168.84.124:8080/param/test?name=aaa
 ###
+
+GET http://192.168.84.124:8080/file/compare/new

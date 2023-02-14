@@ -11,13 +11,17 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cong.filecompare.common.MapperEnum;
@@ -154,9 +158,10 @@ public class FileCompareController {
     @GetMapping("new")
     public void newCompare(){
         String url="/doc_compare/create";
-        String doc1="/home/cong/data/space/source.pdf";
-        String doc2="/home/cong/data/space/target.pdf";
-
+//        String doc1="/home/cong/data/space/source.pdf";
+//        String doc2="/home/cong/data/space/target.pdf";
+        String doc1="/Users/cong/Downloads/source.pdf";
+        String doc2="/Users/cong/Downloads/target.pdf";
         CompareDto compareDto = new CompareDto();
         ConvertArg convertArg = new ConvertArg();
         convertArg.setRemoveStamp(1);
@@ -185,11 +190,25 @@ public class FileCompareController {
         compareDto.setStandardDoc(standardDoc);
         compareDto.setCompareDoc(compareDoc);
 
-        Mono<String> mono = webClient.post().uri(url).contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(compareDto).retrieve().bodyToMono(String.class);
-        System.out.println(mono.block());
+        Mono<ClientResponse> exchange = webClient.post().uri(url).contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(compareDto).exchange();
+        ClientResponse block = exchange.block();
+        ClientResponse.Headers headers = block.headers();
+        int i = block.statusCode().value();
+        Mono<String> stringMono = block.bodyToMono(String.class);
+        log.info(stringMono.block());
 
-        
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        String jsonData = MapperEnum.INSTANCE.getObjectMapper().writeValueAsString(compareDto);
+        HttpEntity<String> entity = new HttpEntity<>(jsonData, httpHeaders);
+
+        String url2 = "http://192.168.104.122:4850"+url;
+        String result = restTemplate.postForObject(url2, entity, String.class);
+        log.info(result);
     }
 
 }
